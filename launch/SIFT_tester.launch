@@ -1,0 +1,92 @@
+<!-- produce /rgbd/image2, /rgbd/depth2 from a bag file -->
+<launch>
+$(roscd kinect_tracker)
+
+	<include file="$(find openni_launch)/launch/openni.launch"/>
+
+	<node name="dynamic_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load /camera/driver $(find kinect_tracker)/launch/kinect_params.yaml" />
+    <node pkg="volumecolorsegmenter" type="VolumeColorSegmenter" name="VolumeColorSegmenter" output="screen" respawn="false">
+        <param name="color_model_name" value="$(find volumecolorsegmenter)/files/puppetrycolormodel_robin.txt"/>
+        <param name="use_backsub_segmenter" value = "true"/>
+        <param name="use_color_segmenter" value = "true"/>
+        <param name="use_volume_segmenter" value = "false"/>
+        <param name="publish_background" value = "true"/>
+        <param name="cloud_skip" value = "1"/>
+        <param name="depth_focal_length" value = "525.0"/>
+        <remap from="incloud" to="/camera/depth_registered/points"/>
+        <remap from="outcloud" to="/camera/rgb/points_seg"/>
+    </node>
+	
+	
+	
+ 	<node pkg="rth_SIFT" type="rth_SIFT" name="rth_SIFT" output="screen" respawn="false">
+    	<rosparam command="load" file="$(find openni_camera)/info/openni_params.yaml" />
+        <param name="pose_feed_only" value="true"/>         
+        <param name="refresh_rate" value="60"/> 
+        <param name="pose_load_names" value = "TuxDuck_balanced" />
+        <param name="files_path" value="$(find kinect_tracker)/files/SIFT/"/>            
+              
+        <param name="sift_first_octave" value="-1"/>
+		<param name="sift_num_octaves" value="3"/>        
+		<param name="sift_dog_threshold" value="0.0066"/>
+		<param name="sift_edge_threshold" value="50"/>
+		<param name="sift_filter_width_factor" value="3"/>
+		<param name="sift_num_feature_orientations" value="2"/>
+		<param name="SIFT_transform_mask" value="false"/>
+		<param name="bin_cutoff" value="16"/>
+		       	
+       	<remap from="rgb_feed" to="/camera/rgb/image_color"/>         	
+       	<remap from="depth_feed" to="/camera/depth_registered/image"/>          	     
+	</node>
+	
+	
+    <node pkg="kinect_tracker" type="KinectTracker" name="KinectTracker" output="screen" respawn="false">
+    
+        <param name="files_path" value="$(find kinect_tracker)/files/"/>
+    
+        <param name="ply_names" value="TuxDuck_sampled"/>
+        <param name="display_ply_names" value="TuxDuck"/>
+        <param name="model_names" value="TuxDuck"/>
+        <param name="model_cloud_downsampling" value = "1," />    
+                
+        <param name="include_xy_channels" value = "false"/>
+        <param name="publish_all_points" value = "false" />
+        
+        <param name="icp_outlier_threshold" value = "0.33" /> 
+                
+        <param name="multi_core_tracker" value = "true" />
+        <param name="use_inverse_icp" value = "true" />
+        <param name="match_model_to_cloud" value = "false" />
+        <param name="show_transient_pose" value = "false" />
+        
+        <param name="filter_correspondences" value= "true"/>
+        <param name="filter_distance_ratio" value= "1.2"/>
+        <param name="publish_clouds" value = "true"/>
+        
+        <param name="use_cloud_normals" value = "true"/>
+        <param name="max_normal_difference_deg" value= "180"/>
+        
+        <param name="background_image" value = "checkerboard_small.jpg"/>
+        
+        <param name="tracker_frame_skip" value = "0" />   
+        <param name="cloud_skip" value = "1"/>
+        <param name="min_cloud_size" value = "25"/>
+        <param name="queue_size" value = "3"/>            
+        
+        <param name="load_performance" value = "BlockTemp" />
+        <param name="save_performance" value = "BlockTemp2" />
+                
+        <param name="save_SIFT_poses" value = "false" />
+        
+       	<param name="use_rgb_feed" value = "true" />
+        
+        <param name="use_SIFT" value="true"/>
+
+        <!-- Message remapping -->
+        <remap from="incloud" to="/camera/rgb/points_seg"/>
+        <remap from="outcloud" to="rgbd/cloud"/>   
+        <remap from="rgb_feed" to="camera/rgb/image_color"/>  
+        <remap from="bw_feed" to="camera/rgb/image_mono"/>    
+        <remap from="depth_feed" to="/camera/depth_registered/image_rect"/>                      
+	</node>
+</launch>

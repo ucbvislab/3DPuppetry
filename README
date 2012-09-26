@@ -1,0 +1,9 @@
+Robin Held
+UC Berkeley
+July 9, 2012
+
+kinect_tracker:
+
+This package is the main application for the 3D Puppetry interface developed by Robert Held, Ankit Gupta, Brian Curless, and Maneesh Agrawala. Visit http://vis.berkeley.edu/software/3d_puppetry_software/3DPuppetry/ for details on the project and instructions for its use.
+
+See LICENSE.txt for licensing information.

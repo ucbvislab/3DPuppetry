@@ -1,0 +1,57 @@
+<!-- produce /rgbd/image2, /rgbd/depth2 from a bag file -->
+<launch>
+$(roscd kinect_tracker)
+
+	<include file="$(find openni_launch)/launch/openni.launch"/>
+
+	<node name="dynamic_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load /camera/driver $(find kinect_tracker)/launch/kinect_params.yaml" />
+	<!--<node name="dynamic_reconfigure2" pkg="dynamic_reconfigure" type="dynparam" args="load /camera/rgb/debayer $(find kinect_tracker)/launch/debayer_params.yaml" />-->
+    <node pkg="volumecolorsegmenter" type="VolumeColorSegmenter" name="VolumeColorSegmenter" output="screen" respawn="false">
+        <param name="color_model_name" value="$(find volumecolorsegmenter)/files/puppetrycolormodel_robin.txt"/>
+        <param name="use_backsub_segmenter" value = "true"/>
+        <param name="use_color_segmenter" value = "true"/>
+        <param name="use_volume_segmenter" value = "false"/>
+        <param name="publish_background" value = "true"/>
+        <param name="cloud_skip" value = "2"/>
+        <param name="depth_focal_length" value = "525.0"/>
+        <remap from="incloud" to="/camera/depth_registered/points"/>
+        <remap from="outcloud" to="/camera/rgb/points_seg"/>
+    </node>	
+	
+    <node pkg="kinect_tracker" type="KinectTracker" name="KinectTracker" output="screen" respawn="false">
+
+    	<!-- ONLY CHANGE THESE PARAMETERS (AND THE COLOR MODEL ABOVE)	-->
+        <param name="ply_names" value="Dino_sampled"/>
+        <param name="model_names" value="Dino"/>
+        <param name="display_ply_names" value="Dino"/>
+        <param name="SIFT_save_base" value = "Test_save"/>	
+        <!--															-->
+        
+        <param name="files_path" value="$(find kinect_tracker)/files/"/>
+        <param name="model_cloud_downsampling" value = "1," />    
+        <param name="icp_outlier_threshold" value = "0.20" /> 
+        <param name="multi_core_tracker" value = "true" />
+        <param name="filter_correspondences" value= "false"/>
+        <param name="filter_distance_ratio" value= "1.2"/>
+        <param name="publish_clouds" value = "false"/>
+        <param name="use_cloud_normals" value = "false"/>
+        <param name="max_normal_difference_deg" value= "150"/>
+        <param name="background_image" value = "checkerboard_small.jpg"/>	   
+        <param name="scene_names" value = "Covered_Bridge.ply,NewModernHouse_Valley_Exploded.dae,empty_intersection_expanded_one_sided_tri.dae,Living_Room.ply,stage.ply" />
+        <param name="scene_scaling" value = "0.0225,0.0008,0.0004,0.10,0.0008" />          
+        <param name="scene_brightness" value = "0.7,1.0,1.6,0.8,1.0," />   
+        <param name="load_performance" value = "NA" />
+        <param name="save_performance" value = "NA" />          
+        <param name="tracker_frame_skip" value = "0" />   
+        <param name="min_cloud_size" value = "100"/>
+        <param name="queue_size" value = "3"/>
+        <param name="save_SIFT_poses" value = "true" />       
+       	<param name="use_rgb_feed" value = "true" />
+        <param name="use_SIFT" value="false"/>
+        <remap from="incloud" to="/camera/rgb/points_seg"/>
+        <remap from="outcloud" to="rgbd/cloud"/>   
+        <remap from="rgb_feed" to="camera/rgb/image_color"/>  
+        <remap from="bw_feed" to="camera/rgb/image_mono"/>    
+        <remap from="depth_feed" to="/camera/depth_registered/image_rect"/>                      
+	</node>
+</launch>

@@ -1,0 +1,29 @@
+<package>
+  <description brief="kinect_tracker">
+
+     kinect_tracker
+
+  </description>
+  <author>Ankit Gupta and Robin Held</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/kinect_tracker</url>
+
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="image_transport"/>
+  <depend package="message_filters"/>
+  <depend package="cv_bridge" />
+  <depend package="opencv2"/>
+  <depend package="pcl_ros"/>
+  <depend package="point_cloud_icp"/>
+  <depend package="rth_SIFT"/>
+  <depend package="volumecolorsegmenter"/>
+  <depend package="common_rosdeps" />
+  <depend package="assimp"/>
+
+</package>
+
+

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"
+mv Makefile Makefile.ros
+cmake -G"Eclipse CDT4 - Unix Makefiles" -Wno-dev .
+rm Makefile
+rm CMakeCache.txt
+rm -rf CMakeFiles
+mv Makefile.ros Makefile
+mv .project .project-cmake
+awk '//{
+        if(index($0,"VERBOSE=1")>0) {
+                printf "\t\t\t\t\t<value>VERBOSE=1|"
+                printf "ROS_ROOT="ENVIRON["ROS_ROOT"]"|"
+                printf "ROS_PACKAGE_PATH="ENVIRON["ROS_PACKAGE_PATH"]"|"
+                printf "PYTHONPATH="ENVIRON["PYTHONPATH"]"|"
+                printf "PATH="ENVIRON["PATH"]"|"
+                print "</value>"
+        } else {
+                print $0
+        }
+}' .project-cmake > .project
+rm .project-cmake
+

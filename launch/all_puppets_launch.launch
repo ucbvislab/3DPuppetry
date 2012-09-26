@@ -1,0 +1,79 @@
+<!-- Launch this file to create new animations -->
+<launch>
+$(roscd kinect_tracker)
+
+ 	<include file="$(find openni_launch)/launch/openni.launch"/>
+
+	<node name="dynamic_reconfigure" pkg="dynamic_reconfigure" type="dynparam" args="load /camera/driver $(find kinect_tracker)/launch/kinect_params.yaml" />
+    <node pkg="volumecolorsegmenter" type="VolumeColorSegmenter" name="VolumeColorSegmenter" output="screen" respawn="false">
+        <param name="color_model_name" value="$(find kinect_tracker)/files/puppetrycolormodel_robin.txt"/>
+        <param name="use_backsub_segmenter" value = "true"/>
+        <param name="use_color_segmenter" value = "true"/>
+        <param name="use_volume_segmenter" value = "false"/>
+        <param name="publish_background" value = "true"/>
+        <param name="cloud_skip" value = "2"/>
+        <param name="depth_focal_length" value = "525.0"/>
+        <remap from="incloud" to="/camera/depth_registered/points"/>
+        <remap from="outcloud" to="/camera/rgb/points_seg"/>
+    </node>
+	
+ 	<node pkg="rth_SIFT" type="rth_SIFT" name="rth_SIFT" output="screen" respawn="false">
+    	<rosparam command="load" file="$(find openni_camera)/info/openni_params.yaml" />
+        <param name="pose_feed_only" value="true"/>         
+        <param name="refresh_rate" value="60"/> 
+        <param name="pose_load_names" value = "fish_balanced,policecar_high,gallardo_high,mini_high,ambulance_balanced,boat_kinect_balanced,firetruck_balanced,duck_fireman_balanced,peter_griffin_balanced,duck_cop_balanced,DumpTruck,CementTruck,BullDozer,Prius_Final,CowgirlDuck_balanced,Dino_balanced,Gator_balanced,Penguin_balanced,TuxDuck_balanced,duck_chef_balanced" />
+        <param name="files_path" value="$(find kinect_tracker)/files/SIFT/"/>            
+              
+        <param name="sift_first_octave" value="-1"/>
+		<param name="sift_num_octaves" value="3"/>        
+		<param name="sift_dog_threshold" value="0.0066"/>
+		<param name="sift_edge_threshold" value="100"/>
+		<param name="sift_filter_width_factor" value="1.5"/>
+		<param name="sift_num_feature_orientations" value="1"/>
+		<param name="bin_cutoff" value="20"/>
+		       	
+       	<remap from="rgb_feed" to="/camera/rgb/image_color"/>         	
+       	<remap from="depth_feed" to="/camera/depth_registered/image"/>          	     
+	</node>
+	
+    <node pkg="kinect_tracker" type="KinectTracker" name="KinectTracker" output="screen" respawn="false">   
+    
+    	<!-- PUPPET PARAMETERS -->              
+       	<param name="ply_names" value="fish_sub,policeCar_recolored_sub,gallardo_scan_sub,mini_culled3_sub,ambulance_sub,boat_kinect_recolored_sub,firetruck_sub,duck_fireman_recolored_sub,peter_griffin_kinect_recolored_sub,duck_cop_sampled,DumpTruck_sampled,CementTruck_sampled,BullDozer_sampled,Prius_Sampled,CowgirlDuck_sampled,Dino_sampled,Gator_sampled,Penguin_sampled,TuxDuck_sampled,duck_chef_sampled"/>
+       	<param name="display_ply_names" value="fish,policeCar_recolored,gallardo_small,mini_recolor_resize,ambulance,boat_kinect_recolored,firetruck,duck_fireman_recolored,peter_griffin_kinect_recolored,duck_cop_recolored,DumpTruck,CementTruck,BullDozer,Prius_Final,CowgirlDuck,Dino,Gator,Penguin,TuxDuck,duck_chef_recolored"/>
+    	<param name="model_names" value="fish_sub,policeCar_recolored_sub,gallardo_scan_sub,mini_culled3_sub,ambulance_sub,boat_kinect_recolored_sub,firetruck_sub,duck_fireman_recolored_sub,peter_griffin_kinect_recolored_sub,duck_cop_recolored,DumpTruck,CementTruck,BullDozer,Prius_Final,CowgirlDuck,Dino,Gator,Penguin,TuxDuck,duck_chef_recolored"/>
+          
+        <!-- BACKGROUND PARAMETERS -->         
+        <param name="scene_names" value = "Covered_Bridge.ply,NewModernHouse_Valley_Exploded.dae,empty_intersection_expanded_one_sided_tri.dae,Living_Room.ply,stage.ply,house_large.ply,alley.ply," />
+        <param name="scene_scaling" value = "0.0225,0.0008,0.0004,0.10,0.0008,0.00020,0.0015" />  
+        <param name="scene_brightness" value = "0.0,0.0,1.0,0.0,0.0,0.0,0.0," />   
+        <param name="background_image" value = "checkerboard_small.jpg"/>	  
+        
+        <!-- ANIMATION PARAMETERS --> 
+        <param name="playback_mode" value = "false" />
+        <param name="load_performance" value = "Conclusion2" />
+        <param name="save_performance" value = "Conclusion2" />            
+                
+       	<!-- The following parameters should only be changed for debugging purposes -->         
+        <param name="icp_outlier_threshold" value = "0.33" /> 
+        <param name="multi_core_tracker" value = "true" />        
+        <param name="use_cloud_normals" value = "true"/>
+        <param name="max_normal_difference_deg" value= "150"/>
+        <param name="filter_correspondences" value= "true"/>
+        <param name="filter_distance_ratio" value= "1.2"/>
+        <param name="tracker_frame_skip" value = "0" />   
+        <param name="min_cloud_size" value = "125"/>
+        <param name="queue_size" value = "3"/>
+        <param name="use_SIFT" value = "true"/>
+        <param name="publish_clouds" value = "false"/>
+	
+		<!-- The following parameters should never be changed-->
+		 <param name="files_path" value="$(find kinect_tracker)/files/"/>      
+        <param name="publish_outlier_clouds" value = "false"/>
+        <remap from="incloud" to="/camera/rgb/points_seg"/>
+        <remap from="outcloud" to="rgbd/cloud"/>   
+        <remap from="rgb_feed" to="/camera/rgb/image_color"/>
+        <remap from="bw_feed" to="camera/rgb/image_mono"/>    
+        <remap from="depth_feed" to="/camera/depth_registered/image_rect"/>                   
+	</node>
+</launch>
